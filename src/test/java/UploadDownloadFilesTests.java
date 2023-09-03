@@ -1,3 +1,4 @@
+import io.github.bonigarcia.wdm.WebDriverManager;
 import org.example.utils.MyFilesUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -11,7 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class UploadDownloadFilesTests extends BaseTestClass{
+public class UploadDownloadFilesTests {
     @Test
     public void uploadTest() throws IOException, InterruptedException {
 
@@ -40,15 +41,17 @@ public class UploadDownloadFilesTests extends BaseTestClass{
         RemoteWebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
 
         File file = MyFilesUtils.generateLoremFile();
-        goToPart("upload");
-        Thread.sleep(3000);
+        driver.manage().window().maximize();
+
+        driver.get("https://the-internet.herokuapp.com/upload");
+
         driver.findElement(By.id("file-upload")).sendKeys(file.getAbsolutePath());
         Thread.sleep(3000);
         driver.findElement(By.id("file-submit")).click();
 
         Assert.assertEquals(driver.findElement(By.id("uploaded-files")).getText().trim(), file.getName());
+        driver.get("https://the-internet.herokuapp.com/download");
 
-        goToPart("download");
         Assert.assertTrue(driver.findElement(By.linkText(file.getName())).isDisplayed());
 
         MyFilesUtils.clearFilesFolder();
@@ -58,7 +61,7 @@ public class UploadDownloadFilesTests extends BaseTestClass{
     public void downloadTest() throws IOException, InterruptedException {
 
         ChromeOptions options = new ChromeOptions();
-        options.setCapability("browserVersion", "latest");
+        options.setCapability("browserVersion", "114.0");
         options.setCapability("selenoid:options", new HashMap<String, Object>() {{
             /* How to add test badge */
             put("name", "Test badge...");
@@ -80,15 +83,19 @@ public class UploadDownloadFilesTests extends BaseTestClass{
             put("enableVideo", false);
         }});
         RemoteWebDriver driver = new RemoteWebDriver(new URL("http://localhost:4444/wd/hub"), options);
+        WebDriverManager.chromedriver().setup();
+        driver.manage().window().maximize();
+
+        driver.get("https://the-internet.herokuapp.com/upload");
 
         File file = MyFilesUtils.generateLoremFile();
-        goToPart("upload");
+
         driver.findElement(By.id("file-upload")).sendKeys(file.getAbsolutePath());
         driver.findElement(By.id("file-submit")).click();
 
         Assert.assertEquals(driver.findElement(By.id("uploaded-files")).getText().trim(), file.getName());
 
-        goToPart("download");
+        driver.get("https://the-internet.herokuapp.com/download");
         driver.findElement(By.linkText(file.getName())).click();
 
 
